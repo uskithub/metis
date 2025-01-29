@@ -1,6 +1,6 @@
 import { Behavior, MeetStatus } from "./behavior"
 
-let meetStatus: MeetStatus = MeetStatus.initilizing
+let meetStatus: MeetStatus = MeetStatus.initializing
 const targetNode = document.body
 
 const behavior = new Behavior()
@@ -12,7 +12,7 @@ const observer = new MutationObserver((mutations: MutationRecord[]) => {
     // <video> の個数をカウント
     const numOfVideoTags = targetNode.querySelectorAll("video").length
 
-    if (meetStatus === MeetStatus.initilizing && numOfVideoTags > 0) {
+    if (meetStatus === MeetStatus.initializing && numOfVideoTags > 0) {
       meetStatus = MeetStatus.ready
       behavior.notify(meetStatus)
     } else if (meetStatus === MeetStatus.ready && numOfVideoTags < 1) {

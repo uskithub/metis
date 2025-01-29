@@ -8,7 +8,7 @@ import { ref } from "vue"
 import { GoogleGenerativeAIFetchError } from "@google/generative-ai"
 
 export const MeetStatus = {
-  initilizing: "initilizing",
+  initializing: "initializing",
   ready: "ready",
   connecting: "connecting",
   meeting: "meeting",
@@ -55,7 +55,7 @@ export class Behavior {
   private state: {
     meetStatus: MeetStatus
     vocativeSettings: VocativeSettings
-    aiSettingStauts: AiSettingStatus
+    aiSettingStatus: AiSettingStatus
   }
 
   private dependencies: {
@@ -66,14 +66,14 @@ export class Behavior {
     dataStore: DataStore
   }
 
-  private beheviorBySystem: { [key in MeetStatus]: () => void } = {
-    [MeetStatus.initilizing]: () => {
+  private behaviorBySystem: { [key in MeetStatus]: () => void } = {
+    [MeetStatus.initializing]: () => {
       // console.log("do nothing")
     },
     [MeetStatus.ready]: () => {
       this.dependencies.presenter.setup(
         Pages.preMeeting({
-          aiSettingStatus: this.state.aiSettingStauts,
+          aiSettingStatus: this.state.aiSettingStatus,
           vocativeSettings: this.state.vocativeSettings,
           adviserStatus
         })
@@ -93,11 +93,13 @@ export class Behavior {
       this.dependencies.stt?.start()
       this.dependencies.presenter.setup(
         Pages.meeting({
-          aiSettingStatus: this.state.aiSettingStauts,
+          aiSettingStatus: this.state.aiSettingStatus,
           vocativeSettings: this.state.vocativeSettings,
           adviserStatus
         })
       )
+
+      this.dependencies.presenter.setupCustomPanel()
     },
     [MeetStatus.terminated]: () => {
       this.dependencies.stt?.stop()
@@ -112,12 +114,12 @@ export class Behavior {
       if (key) {
         this.dependencies.adviser = new Adviser(key, this.state.vocativeSettings.name)
       }
-      this.state.aiSettingStauts = AiSettingStatus.keysSet(settings)
+      this.state.aiSettingStatus = AiSettingStatus.keysSet(settings)
       return Promise.resolve()
     },
     setupVocativeSettings: ({ settings }: { settings: VocativeSettings }): Promise<void> => {
       this.dependencies.dataStore.set(ListToSave.VOCATIVE_SETTINGS, settings)
-      const key = this.state.aiSettingStauts.apiKeys[this.state.aiSettingStauts.aiToUse]
+      const key = this.state.aiSettingStatus.apiKeys[this.state.aiSettingStatus.aiToUse]
       if (key) {
         this.dependencies.adviser = new Adviser(key, settings.name)
       }
@@ -191,9 +193,9 @@ export class Behavior {
 
   constructor() {
     this.state = {
-      meetStatus: MeetStatus.initilizing,
+      meetStatus: MeetStatus.initializing,
       vocativeSettings: DEFAULT_VOCATIVE_SETTINGS,
-      aiSettingStauts: AiSettingStatus.unknown()
+      aiSettingStatus: AiSettingStatus.unknown()
     }
 
     this.dependencies = {
@@ -206,7 +208,7 @@ export class Behavior {
   }
 
   __test() {
-    this.state.aiSettingStauts = AiSettingStatus.keysNotSet()
+    this.state.aiSettingStatus = AiSettingStatus.keysNotSet()
     this.notify(MeetStatus.ready)
   }
 
@@ -225,14 +227,14 @@ export class Behavior {
         return this.dependencies.dataStore
           .get<AiSettings>(ListToSave.AI_SETTINGS)
           .then((aiSettings) => {
-            this.state.aiSettingStauts = AiSettingStatus.keysSet(aiSettings)
+            this.state.aiSettingStatus = AiSettingStatus.keysSet(aiSettings)
             const key = aiSettings.apiKeys[aiSettings.aiToUse]
             if (key) {
               this.dependencies.adviser = new Adviser(key, this.state.vocativeSettings.name)
             }
           })
           .catch((_) => {
-            this.state.aiSettingStauts = AiSettingStatus.keysNotSet()
+            this.state.aiSettingStatus = AiSettingStatus.keysNotSet()
           })
           .finally(() => {
             initialAction?.()
@@ -245,7 +247,7 @@ export class Behavior {
     if (this.state.meetStatus !== status) {
       // console.log("Meet status changed: ", status)
       this.state.meetStatus = status
-      this.beheviorBySystem[status]()
+      this.behaviorBySystem[status]()
     }
   }
 

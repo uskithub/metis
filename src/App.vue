@@ -50,7 +50,7 @@ const {
   adviserStatus
 } = inject<Pages>(Constants.PAGE_CONTEXT)!
 
-const isPreMeetig = page === Pages.keys.preMeeting
+const isPreMeeting = page === Pages.keys.preMeeting
 
 let prevAiToUse: AIs | null = null
 let savedApiKeys: ApiKeys = {
@@ -67,7 +67,7 @@ if (aiSettingStatus.case === AiSettingStatus.keys.keysSet) {
   state.aiToUse = aiSettingStatus.aiToUse
   state.apiKeys = { ...aiSettingStatus.apiKeys }
   savedApiKeys = { ...aiSettingStatus.apiKeys }
-  if (isPreMeetig) {
+  if (isPreMeeting) {
     state.balloon = Balloon.message({ message: "準備は万端、ミーティングが楽しみです😃" })
   } else {
     state.balloon = Balloon.message({
@@ -75,7 +75,7 @@ if (aiSettingStatus.case === AiSettingStatus.keys.keysSet) {
     })
   }
 } else {
-  if (isPreMeetig) {
+  if (isPreMeeting) {
     state.balloon = Balloon.settingIncomplete()
   }
 }
