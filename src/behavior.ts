@@ -98,8 +98,6 @@ export class Behavior {
           adviserStatus
         })
       )
-
-      this.dependencies.presenter.setupCustomPanel()
     },
     [MeetStatus.terminated]: () => {
       this.dependencies.stt?.stop()
